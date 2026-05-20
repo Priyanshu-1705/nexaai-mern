@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-inter: "Inter", sans-serif;
+    --font-grotesk: "Space Grotesk", sans-serif;
+    --color-primary: #7C3AED;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
