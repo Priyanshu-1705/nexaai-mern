@@ -4,7 +4,7 @@ import { assets } from '../assets/assets.js';
 import moment from 'moment';
 
 const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
-  const { chats, setSelectedChat, theme, setTheme, user, navigate } = useAppContext();
+  const { chats, setSelectedChats, theme, setTheme, user, navigate } = useAppContext();
   const [search, setSearch] = useState('')
 
   return (
@@ -47,7 +47,7 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
               return (
                 <div
                   onClick={() => {
-                    setSelectedChat(chat)
+                    setSelectedChats(chat)
                     navigate('/')
                     setIsMenuOpen(false)
                   }}
