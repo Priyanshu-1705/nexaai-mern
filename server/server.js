@@ -1,15 +1,19 @@
+import './configs/env.js';
 import express from 'express'
 import cors from 'cors'
-import dotenv from 'dotenv'
 import connectDB from './configs/db.js'
 import userRouter from './routes/userRoutes.js'
 import chatRouter from './routes/chatRoutes.js'
-
-dotenv.config()
+import messageRouter from './routes/messageRoutes.js'
+import creditRouter from './routes/creditRoutes.js';
+import { stripeWebhooks } from './controllers/webhooks.js';
 
 const app = express()
 
 await connectDB()
+
+// Stripe Webhooks
+app.post('/api/webhooks', express.raw({ type: 'application/json' }), stripeWebhooks)
 
 // Middleware
 app.use(cors())
@@ -19,9 +23,10 @@ app.use(express.json())
 app.get('/', (req, res) => {
     res.send('API Working')
 })
-
 app.use('/api/user', userRouter)
 app.use('/api/chat', chatRouter)
+app.use('/api/message', messageRouter)
+app.use('/api/credit', creditRouter)
 
 const PORT = process.env.PORT || 3000
 
