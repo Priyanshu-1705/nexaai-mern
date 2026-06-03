@@ -1,138 +1,148 @@
 import Stripe from "stripe";
-import Transaction from "../models/Transaction.js";
-import User from "../models/User.js";
+import Transaction
+from "../models/Transaction.js";
+import User
+from "../models/User.js";
 
-export const stripeWebhooks = async (req, res) => {
-
-    const stripe = new Stripe(
-        process.env.STRIPE_SECRET_KEY
+const stripe =
+    new Stripe(
+        process.env
+            .STRIPE_SECRET_KEY
     );
 
-    const signature =
-        req.headers[
-        "stripe-signature"
-        ];
+export const stripeWebhooks =
+    async (
+        req,
+        res
+    ) => {
 
-    let event;
+        const signature =
+            req.headers[
+                "stripe-signature"
+            ];
 
-    // Verify webhook
-    try {
+        let event;
 
-        event =
-            stripe.webhooks.constructEvent(
-                req.body,
-                signature,
-                process.env
-                    .STRIPE_WEBHOOK_SECRET
+        try {
+
+            event =
+                stripe.webhooks.constructEvent(
+                    req.body,
+                    signature,
+                    process.env
+                        .STRIPE_WEBHOOK_SECRET
+                );
+
+        } catch (error) {
+
+            console.log(
+                "Webhook error:",
+                error.message
             );
 
-    } catch (error) {
-
-        console.log(
-            "Webhook signature error:",
-            error.message
-        );
-
-        return res
-            .status(400)
-            .send(
-                `Webhook Error: ${error.message}`
-            );
-    }
-
-    try {
-
-        switch (event.type) {
-
-            case "checkout.session.completed": {
-
-                const session =
-                    event.data.object;
-
-                const {
-                    transactionId,
-                    appId
-                } = session.metadata || {};
-
-                console.log(
-                    "Metadata:",
-                    session.metadata
-                );
-
-                // Verify app
-                if (appId !== "nexaai") {
-                    return res.json({
-                        received: true,
-                        message:
-                            "Invalid app"
-                    });
-                }
-
-                // Find unpaid transaction
-                const transaction =
-                    await Transaction.findOne({
-                        _id:
-                            transactionId,
-                        isPaid:
-                            false
-                    });
-
-                if (!transaction) {
-                    return res.json({
-                        received:
-                            true,
-                        message:
-                            "Transaction not found or already paid"
-                    });
-                }
-
-                // Add credits
-                await User.updateOne(
-                    {
-                        _id:
-                            transaction.userId
-                    },
-                    {
-                        $inc: {
-                            credit:
-                                transaction.credit
-                        }
-                    }
-                );
-
-                // Mark transaction paid
-                transaction.isPaid = true;
-                await transaction.save();
-
-                console.log(
-                    "Credits added successfully"
-                );
-
-                break;
-            }
-
-            default:
-                console.log(
-                    `Unhandled event type ${event.type}`
+            return res
+                .status(400)
+                .send(
+                    `Webhook Error: ${error.message}`
                 );
         }
 
-        return res.json({
-            received: true
-        });
+        try {
 
-    } catch (error) {
+            switch (
+                event.type
+            ) {
 
-        console.log(
-            "Webhook processing error:",
-            error
-        );
+                case
+                    "checkout.session.completed": {
 
-        return res
-            .status(500)
-            .send(
-                "Internal Server Error"
+                    const session =
+                        event.data.object;
+
+                    const {
+                        transactionId,
+                        appId
+                    } =
+                        session.metadata || {};
+
+                    if (
+                        appId !==
+                        "nexaai"
+                    ) {
+                        return res.json({
+                            received:
+                                true
+                        });
+                    }
+
+                    const transaction =
+                        await Transaction.findOne({
+                            _id:
+                                transactionId,
+                            isPaid:
+                                false
+                        });
+
+                    if (
+                        !transaction
+                    ) {
+
+                        return res.json({
+                            received:
+                                true,
+                            message:
+                                "Transaction already processed"
+                        });
+                    }
+
+                    // Add credits
+                    await User.updateOne(
+                        {
+                            _id:
+                                transaction.userId
+                        },
+                        {
+                            $inc: {
+                                credit:
+                                    transaction.credit
+                            }
+                        }
+                    );
+
+                    // Mark paid
+                    transaction.isPaid =
+                        true;
+
+                    await transaction.save();
+
+                    console.log(
+                        "Credits added successfully"
+                    );
+
+                    break;
+                }
+
+                default:
+                    console.log(
+                        `Unhandled event: ${event.type}`
+                    );
+            }
+
+            return res.json({
+                received: true
+            });
+
+        } catch (error) {
+
+            console.log(
+                "Webhook processing error:",
+                error
             );
-    }
-};
 
+            return res
+                .status(500)
+                .send(
+                    "Internal Server Error"
+                );
+        }
+    };

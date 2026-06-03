@@ -47,61 +47,98 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 // API Controller for purchasing a plan
 export const purchasePlan = async (req, res) => {
     try {
-        const { planId } = req.body;
-        const userId = req.user._id;
-        const plan = plans.find(plan => plan._id === planId);
+
+        const { planId } =
+            req.body;
+
+        const userId =
+            req.user._id;
+
+        const plan =
+            plans.find(
+                (plan) =>
+                    plan._id === planId
+            );
+
         if (!plan) {
             return res.json({
                 success: false,
-                message: "Plan not found"
-            })
+                message:
+                    "Plan not found"
+            });
         }
 
-        // Create new transaction
-        const transaction = await Transaction.create({
-            userId: userId,
-            planId: plan._id,
-            amount: plan.price,
-            credit: plan.credit,
-            isPaid: false
-        })
+        // Create transaction
+        const transaction =
+            await Transaction.create({
+                userId,
+                planId:
+                    plan._id,
+                amount:
+                    plan.price,
+                credit:
+                    plan.credit,
+                isPaid:
+                    false
+            });
 
-        const { origin } = req.headers;
+        // Create Stripe session
+        const session =
+            await stripe.checkout.sessions.create({
+                payment_method_types:
+                    ["card"],
 
-        const session = await stripe.checkout.sessions.create({
-            line_items: [
-                {
-                    price_data: {
-                        currency: "usd",
-                        product_data: {
-                            name: plan.name
+                line_items: [
+                    {
+                        price_data: {
+                            currency:
+                                "usd",
+
+                            product_data: {
+                                name:
+                                    `${plan.name} Plan`
+                            },
+
+                            unit_amount:
+                                plan.price * 100
                         },
-                        unit_amount: plan.price * 100
-                    },
-                    quantity: 1,
-                }
-            ],
-            mode: "payment",
-            success_url:
-                `${process.env.CLIENT_URL}/loading`,
-            cancel_url:
-                `${process.env.CLIENT_URL}`,
-            metadata: {
-                transactionId: transaction._id.toString(),
-                appId: 'nexaai'
-            },
-            expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-            // Expires in 30 mint
-        })
 
-        res.json({
+                        quantity: 1
+                    }
+                ],
+
+                mode:
+                    "payment",
+
+                success_url:
+                    `${process.env.CLIENT_URL}/loading?session_id={CHECKOUT_SESSION_ID}`,
+
+                cancel_url:
+                    `${process.env.CLIENT_URL}`,
+
+                metadata: {
+                    transactionId:
+                        transaction._id.toString(),
+
+                    appId:
+                        "nexaai"
+                }
+            });
+
+        return res.json({
             success: true,
-            url: session.url
-        })
+            url:
+                session.url
+        });
+
     } catch (error) {
-        res.json({
+
+        console.log(error);
+
+        return res.json({
             success: false,
-            message: error.message
-        })
+            message:
+                error.message
+        });
     }
-}
+};
