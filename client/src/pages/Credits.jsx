@@ -1,14 +1,48 @@
 import React, { useState, useEffect } from 'react'
 import { dummyPlans } from '../assets/assets'
 import Loading from './Loading'
+import { useAppContext } from '../context/AppContext.jsx'
+import toast from 'react-hot-toast'
 
 const Credits = () => {
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
+  const { token, axios } = useAppContext()
 
   const fetchPlans = async () => {
-    setPlans(dummyPlans)
+    try {
+      const { data } = await axios.get('/api/credit/plan', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (data.success) {
+        setPlans(data.plans)
+      } else {
+        toast.error(data.message || 'Something went wrong')
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
     setLoading(false)
+  }
+
+  const purchasePlan = async (planId) => {
+    try {
+      const { data } = await axios.post('/api/credit/purchase', { planId }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      if (data.success) {
+        window.location.href = data.url
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   useEffect(() => {
@@ -41,7 +75,7 @@ const Credits = () => {
               <p className='text-2xl font-bold text-purple-600 dark:text-purple-400 mb-4'>
                 ${plan.price}
                 <span className='text-base font-normal text-gray-600 dark:text-purple-200'>
-                  {' '}/{plan.credits} credits
+                  {' '}/{plan.credit} credits
                 </span>
               </p>
               <ul className='list-disc list-inside text-sm text-gray-700 dark:text-purple-200 space-y-1'>
@@ -50,7 +84,8 @@ const Credits = () => {
                 ))}
               </ul>
             </div>
-            <button className='mt-6 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-medium py-2 rounded transition-colors cursor-pointer'>
+            <button onClick={toast.promise(purchasePlan(plan._id)), { loading: 'processing...' }}
+              className='mt-6 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-medium py-2 rounded transition-colors cursor-pointer'>
               Buy Now
             </button>
           </div>

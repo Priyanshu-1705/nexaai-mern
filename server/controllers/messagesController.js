@@ -1,15 +1,15 @@
 import Chat from "../models/Chat.js";
-import User from "../models/User.js"
+import User from "../models/User.js";
 import axios from "axios";
-import imagekit from "../configs/imageKit.js";
 import openai from "../configs/openai.js";
+import imagekit from "../configs/imageKit.js";
 
-//  Text-Based AI Chat Message Controller
+// Text-Based AI Chat Message Controller
 export const textMessageController = async (req, res) => {
     try {
         const userId = req.user._id;
 
-        // Check credits
+        // Credit check
         if (req.user.credit < 1) {
             return res.json({
                 success: false,
@@ -19,71 +19,13 @@ export const textMessageController = async (req, res) => {
 
         const { chatId, prompt } = req.body;
 
-        const chat = await Chat.findOne({
-            userId,
-            _id: chatId
-        });
-
-        chat.messages.push({
-            role: "user",
-            content: prompt,
-            timeStamp: Date.now(),
-            isImage: false
-        });
-
-        const { choices } =
-            await openai.chat.completions.create({
-                model: "gemini-2.5-flash",
-                messages: [
-                    {
-                        role: "user",
-                        content: prompt,
-                    },
-                ],
-            });
-
-        const reply = {
-            ...choices[0].message,
-            timeStamp: Date.now(),
-            isImage: false
-        };
-
-        chat.messages.push(reply);
-
-        await chat.save();
-
-        await User.updateOne(
-            { _id: userId },
-            { $inc: { credit: -1 } }
-        );
-
-        res.json({
-            success: true,
-            reply
-        });
-
-    } catch (error) {
-        res.json({
-            success: false,
-            message: error.message
-        });
-    }
-};
-
-// Iamge Generation Message Controller
-export const imageMessageController = async (req, res) => {
-    try {
-        const userId = req.user._id;
-
-        // Check credits
-        if (req.user.credit < 2) {
+        // Prompt validation
+        if (!prompt?.trim()) {
             return res.json({
                 success: false,
-                message: "Insufficient credits"
+                message: "Prompt is required"
             });
         }
-
-        const { prompt, chatId, isPublished } = req.body;
 
         // Find chat
         const chat = await Chat.findOne({
@@ -91,23 +33,134 @@ export const imageMessageController = async (req, res) => {
             _id: chatId
         });
 
-        // Push user message
+        if (!chat) {
+            return res.json({
+                success: false,
+                message: "Chat not found"
+            });
+        }
+
+        // Save user message
         chat.messages.push({
             role: "user",
-            content: prompt,
-            timeStamp: Date.now(),
+            content: prompt.trim(),
+            timestamp: Date.now(),
+            isImage: false
+        });
+
+        // AI response
+        const response =
+            await openai.chat.completions.create({
+                model: "gemini-2.5-flash",
+                messages: [
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ]
+            });
+
+        const aiMessage =
+            response?.choices?.[0]?.message;
+
+        if (!aiMessage) {
+            return res.json({
+                success: false,
+                message: "Failed to generate response"
+            });
+        }
+
+        const reply = {
+            ...aiMessage,
+            timestamp: Date.now(),
+            isImage: false
+        };
+
+        // Save AI response
+        chat.messages.push(reply);
+        await chat.save();
+
+        // Deduct credit
+        await User.updateOne(
+            { _id: userId },
+            { $inc: { credit: -1 } }
+        );
+
+        return res.json({
+            success: true,
+            reply
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        return res.json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// Image Generation Controller
+export const imageMessageController = async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        // Credit check
+        if (req.user.credit < 2) {
+            return res.json({
+                success: false,
+                message: "Insufficient credits"
+            });
+        }
+
+        const {
+            prompt,
+            chatId,
+            isPublished
+        } = req.body;
+
+        // Prompt validation
+        if (!prompt?.trim()) {
+            return res.json({
+                success: false,
+                message: "Prompt is required"
+            });
+        }
+
+        // Find chat
+        const chat =
+            await Chat.findOne({
+                userId,
+                _id: chatId
+            });
+
+        if (!chat) {
+            return res.json({
+                success: false,
+                message: "Chat not found"
+            });
+        }
+
+        // Save user message
+        chat.messages.push({
+            role: "user",
+            content: prompt.trim(),
+            timestamp: Date.now(),
             isImage: false
         });
 
         // Encode prompt
         const encodedPrompt =
-            encodeURIComponent(prompt);
+            encodeURIComponent(
+                prompt
+            );
 
-        // Generate Image URL
+        // Generate image URL
         const generatedImageUrl =
             `${process.env.IMAGEKIT_URL_ENDPOINT}/ik-genimg-prompt-${encodedPrompt}/nexaai/${Date.now()}.png?tr=w-800,h-800`;
 
-        // Fetch generated image
+        // Fetch image
         const aiImageResponse =
             await axios.get(
                 generatedImageUrl,
@@ -130,24 +183,27 @@ export const imageMessageController = async (req, res) => {
                 file: base64Image,
                 fileName:
                     `${Date.now()}.png`,
-                folder: "NexaAI"
+                folder:
+                    "/NexaAI",
+                useUniqueFileName:
+                    true
             });
 
         const reply = {
             role: "assistant",
             content:
                 uploadResponse.url,
-            timeStamp:
+            timestamp:
                 Date.now(),
             isImage: true,
             isPublished
         };
 
-        // Save message
+        // Save reply
         chat.messages.push(reply);
         await chat.save();
 
-        // Deduct credits
+        // Deduct credit
         await User.updateOne(
             { _id: userId },
             {
@@ -157,16 +213,19 @@ export const imageMessageController = async (req, res) => {
             }
         );
 
-        // Send response ONLY ONCE
         return res.json({
             success: true,
             reply
         });
 
     } catch (error) {
+        console.log(error);
+
         return res.json({
             success: false,
-            message: error.message
+            message:
+                error.message
         });
     }
 };
+
