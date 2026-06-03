@@ -11,7 +11,7 @@ const Credits = () => {
 
   const fetchPlans = async () => {
     try {
-      const { data } = await axios.get('/api/credit/plan', {
+      const { data } = await axios.get('/api/credit/plans', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -84,7 +84,15 @@ const Credits = () => {
                 ))}
               </ul>
             </div>
-            <button onClick={toast.promise(purchasePlan(plan._id)), { loading: 'processing...' }}
+            <button oonClick={() =>
+              toast.promise(
+                purchasePlan(plan._id),
+                {
+                  loading:
+                    'Processing...'
+                }
+              )
+            }
               className='mt-6 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-medium py-2 rounded transition-colors cursor-pointer'>
               Buy Now
             </button>
