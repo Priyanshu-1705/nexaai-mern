@@ -84,7 +84,7 @@ const Credits = () => {
                 ))}
               </ul>
             </div>
-            <button oonClick={() =>
+            <button onClick={() =>
               toast.promise(
                 purchasePlan(plan._id),
                 {
