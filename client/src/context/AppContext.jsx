@@ -45,6 +45,10 @@ export const AppContextProvider = ({ children }) => {
     }
 
     const fetchUserChats = async () => {
+        console.log(
+            "CURRENT PATH:",
+            window.location.pathname
+        );
         try {
             const { data } = await axios.get('/api/chat/get',
                 { headers: { Authorization: `Bearer ${token}` } })
