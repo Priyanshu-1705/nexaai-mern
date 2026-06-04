@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { dummyPlans } from '../assets/assets'
-import Loading from './Loading'
 import { useAppContext } from '../context/AppContext.jsx'
 import toast from 'react-hot-toast'
 
@@ -50,10 +48,12 @@ const Credits = () => {
   }, [])
 
   if (loading) {
-    return <Loading />
+    return (
+      <div className='flex items-center justify-center h-full w-full'>
+        <div className='w-10 h-10 rounded-full border-4 border-purple-500 border-t-transparent animate-spin'></div>
+      </div>
+    )
   }
-
-
   return (
     <div className='max-w-7xl h-screen overflow-y-scroll mx-auto px-4 sm:px-6 lg:px-8 py-12'>
       <h2 className='text-3xl font-semibold text-center mb-10 xl:mt-32 text-gray-800 dark:text-white'>
