@@ -33,20 +33,40 @@ export const AppContextProvider = ({ children }) => {
         }
     }
 
-    const createNewChat = async (chatName) => {
+    const createNewChat = async (
+        chatName,
+        shouldNavigate = true
+    ) => {
         try {
-            if (!user) return toast.error('Please login to create a new chat')
-            if (
-                shouldNavigate
-            ) {
+
+            if (!user) {
+                return toast.error(
+                    'Please login to create a new chat'
+                );
+            }
+
+            if (shouldNavigate) {
                 navigate('/');
             }
-            await axios.get('/api/chat/create', { headers: { Authorization: `Bearer ${token}` } })
-            await fetchUserChats()
+
+            await axios.get(
+                '/api/chat/create',
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+            await fetchUserChats();
+
         } catch (error) {
-            toast.error(error.message)
+            toast.error(
+                error.message
+            );
         }
-    }
+    };
 
     const fetchUserChats = async () => {
         try {
