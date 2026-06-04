@@ -36,7 +36,11 @@ export const AppContextProvider = ({ children }) => {
     const createNewChat = async (chatName) => {
         try {
             if (!user) return toast.error('Please login to create a new chat')
-            navigate('/')
+            if (
+                shouldNavigate
+            ) {
+                navigate('/');
+            }
             await axios.get('/api/chat/create', { headers: { Authorization: `Bearer ${token}` } })
             await fetchUserChats()
         } catch (error) {
@@ -52,7 +56,10 @@ export const AppContextProvider = ({ children }) => {
                 setChats(data.chats)
                 // If the user has no chats, create one
                 if (data.chats.length === 0) {
-                    await createNewChat();
+                    await createNewChat(
+                        null,
+                        false
+                    );
                     const updated =
                         await axios.get(
                             '/api/chat/get',
