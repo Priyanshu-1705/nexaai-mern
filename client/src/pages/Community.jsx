@@ -36,7 +36,13 @@ const Community = () => {
     fetchImages()
   }, [])
 
-  if (loading) return <Loading />
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center h-full w-full'>
+        <div className='w-10 h-10 rounded-full border-4 border-purple-500 border-t-transparent animate-spin'></div>
+      </div>
+    );
+  }
 
   return (
     <div className='p-6 pt-12 xl:px-12 2xl:px-20 w-full mx-auto h-full overflow-y-scroll'>
