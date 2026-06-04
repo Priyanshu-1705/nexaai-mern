@@ -67,7 +67,11 @@ export const AppContextProvider = ({ children }) => {
                     setChats(updated.data.chats);
                     return;
                 } else {
-                    setSelectedChat(data.chats[0])
+                    if (!selectedChat) {
+                        setSelectedChat(
+                            data.chats[0]
+                        );
+                    }
                 }
             } else {
                 toast.error(data.message)
