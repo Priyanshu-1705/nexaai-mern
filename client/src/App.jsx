@@ -12,43 +12,105 @@ import Login from './pages/Login.jsx'
 import { Toaster } from 'react-hot-toast'
 
 const App = () => {
-  const { loadingUser } = useAppContext();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user } = useAppContext()
-  const { pathname } = useLocation()
-  if (pathname === '/loading')
-    return <Loading />
 
-  if (loadingUser)
+  const {
+    loadingUser,
+    user
+  } = useAppContext();
+
+  const [isMenuOpen,
+    setIsMenuOpen] =
+    useState(false);
+
+  const {
+    pathname
+  } =
+    useLocation();
+
+  // Only for payment success page
+  if (
+    pathname ===
+    '/loading'
+  ) {
+    return <Loading />;
+  }
+
+  // General app loading
+  if (
+    loadingUser
+  ) {
     return (
-      <div className='flex items-center justify-center h-screen'>
-        Loading...
+      <div className='flex items-center justify-center h-screen dark:bg-black text-white'>
+        <div className='w-10 h-10 rounded-full border-4 border-white border-t-transparent animate-spin'>
+        </div>
       </div>
-    )
+    );
+  }
 
   return (
     <>
       <Toaster />
-      {!isMenuOpen && <img src={assets.menu_icon} className='absolute top-3 left-3 w-8 h-8 cursor-pointer md:hidden not-dark:invert'
-        onClick={() => setIsMenuOpen(true)}
-      />}
-      {user ? (
-        <div className='dark:bg-gradient-to-b from-[#242124] to-[#000000] dark:text-white'>
-          <div className='flex h-screen w-screen'>
-            <Sidebar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-            <Routes>
-              <Route path='/' element={<ChatBox />} />
-              <Route path='/credits' element={<Credits />} />
-              <Route path='/community' element={<Community />} />
-            </Routes>
-          </div>
-        </div>
-      ) : (
-        <div>
-          <Login />
-        </div>
+
+      {!isMenuOpen && (
+        <img
+          src={
+            assets.menu_icon
+          }
+
+          className='absolute top-3 left-3 w-8 h-8 cursor-pointer md:hidden not-dark:invert'
+
+          onClick={() =>
+            setIsMenuOpen(
+              true
+            )
+          }
+        />
       )}
 
+      {user ? (
+        <div className='dark:bg-gradient-to-b from-[#242124] to-[#000000] dark:text-white'>
+
+          <div className='flex h-screen w-screen'>
+
+            <Sidebar
+              isMenuOpen={
+                isMenuOpen
+              }
+
+              setIsMenuOpen={
+                setIsMenuOpen
+              }
+            />
+
+            <Routes>
+              <Route
+                path='/'
+                element={
+                  <ChatBox />
+                }
+              />
+
+              <Route
+                path='/credits'
+                element={
+                  <Credits />
+                }
+              />
+
+              <Route
+                path='/community'
+                element={
+                  <Community />
+                }
+              />
+            </Routes>
+
+          </div>
+
+        </div>
+      ) : (
+        <Login />
+      )}
     </>
   )
 }
