@@ -8,12 +8,28 @@ const Loading = () => {
   const { fetchUser } = useAppContext()
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      fetchUser()
-      navigate('/')
-    }, 8000)
-    return () => clearTimeout(timeout)
-  }, [])
+
+    const verifyPayment =
+      async () => {
+
+        try {
+
+          // wait for updated credits
+          await fetchUser();
+
+          // small delay for smoother UX
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
+
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+    verifyPayment();
+
+  }, []);
   return (
     <div className='bg-gradient-to-b from-[#531B81] to-[#29184B] backdrop-opacity-60 flex items-center justify-center h-screen w-screen text-white text-2xl'>
       <div className='w-10 h-10 rounded-full border-3 border-white border-t-transparent animate-spin'>
