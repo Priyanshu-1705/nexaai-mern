@@ -152,13 +152,20 @@ export const imageMessageController = async (req, res) => {
 
         // Encode prompt
         const encodedPrompt =
-            encodeURIComponent(
-                prompt
-            );
+            encodeURIComponent(prompt);
 
         // Generate image URL
         const generatedImageUrl =
             `${process.env.IMAGEKIT_URL_ENDPOINT}/ik-genimg-prompt-${encodedPrompt}/nexaai/${Date.now()}.png?tr=w-800,h-800`;
+
+        // Wait for ImageKit to prepare image
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    8000
+                )
+        );
 
         // Fetch image
         const aiImageResponse =
