@@ -16,7 +16,15 @@ const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useAppContext()
   const { pathname } = useLocation()
-  if (pathname === '/loading' || loadingUser) return <Loading />
+  if (pathname === '/loading')
+    return <Loading />
+
+  if (loadingUser)
+    return (
+      <div className='flex items-center justify-center h-screen'>
+        Loading...
+      </div>
+    )
 
   return (
     <>
