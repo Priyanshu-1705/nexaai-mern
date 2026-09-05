@@ -109,27 +109,31 @@ nexaai-mern/
 
 ### 🏠 Home Page
 
-![Home](./screenshots/home.png)
+<img width="2556" height="1303" alt="image" src="https://github.com/user-attachments/assets/7dd2d97a-4fa6-4fea-b2ca-30207d7a7db0" />
+
 
 ### 💬 Chat Interface
 
-![Chat](./screenshots/chat.png)
+<img width="2554" height="1309" alt="image" src="https://github.com/user-attachments/assets/6c888c7b-a8f2-4037-82f5-5d41d2269b19" />
+
 
 ### 💳 Credit Plans
 
-![Credits](./screenshots/credits.png)
+<img width="2557" height="1306" alt="image" src="https://github.com/user-attachments/assets/fa256236-e628-40c6-9733-b9612a7e5bf8" />
 
-### 🌍 Community Images
-
-![Community](./screenshots/community.png)
 
 ### 💰 Payment Integration
 
-![Payment](./screenshots/payment.png)
+<img width="2539" height="1309" alt="image" src="https://github.com/user-attachments/assets/a1d40ca3-c173-444b-922f-7d7a3813a68c" />
+
 
 ### 🔐 Login Page
 
-![Login](./screenshots/login.png)
+<img width="2557" height="1315" alt="image" src="https://github.com/user-attachments/assets/30805c07-888e-4609-8201-2710b6a804bb" />
+
+<img width="2557" height="1309" alt="image" src="https://github.com/user-attachments/assets/97c10f16-4b11-41c0-bb00-7e417e2e27ce" />
+
+
 
 ---
 
